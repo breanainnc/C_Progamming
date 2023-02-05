@@ -51,7 +51,7 @@ int CreateUser()
 
         char* sql;
         sql = "INSERT INTO USERDB (ID,USERNAME,PASSWORD,FULLNAME,ADDRESS,BALANCE) "  \
-         "VALUES (1, 'BRE', 'secret', 'Breanainn Cahill', 'Corofin', 10000 ); ";
+         "VALUES (1, 'BRE', 'secret', 'Br', 'Corn', 10000 ); ";
 
         rc = sqlite3_exec(db, sql, callback, 0, &err);
         sqlite3_close(db);
