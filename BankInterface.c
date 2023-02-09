@@ -1,17 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 char* red = "\033[1;31m";
 char* white = "\033[0m";
 char* yellow = "\033[1;33m";
 char* purple = "\033[1;35m";
 
+char username[30];
+
 int checkInput(char*, char*);
 int getBalance();
 char* getFullName();
 int CreateUser(char*, char*, char*, char*, int);
 int checkTableExists();
+int checkLegalTransfer(char*, int);
 
 // Function that returns user choice from various services
 int WelcomeMenu()
@@ -34,12 +38,83 @@ int WelcomeMenu()
         }
 }
 
+//Checks string to see if chars are legal
+int checkUserInput(char* input){
+        for(int i = 0; i < strlen(input); i++){
+                if(isalpha(input[i]) == 0 ) { return 1; }
+        }
+        return 0;
+}
+
+//Banking menu after log in
+void BankingOptions()
+{
+                printf("%s*============*\nWELCOME to your Cahill's ACCOUNT\n*============*\n%s\n", yellow, white);
+                printf("What ACTION would you like to perform?\n");
+                printf("1 --- See Balance \n");
+                printf("2 --- Transfer Funds\n");
+                printf("3 --- Bet Funds\n");
+                printf("4 --- Exit\n");
+
+                int choice;
+               scanf("%d", &choice);
+
+                if(choice > 0 && choice < 5)
+                {
+                        switch (choice)
+                        {
+                                case 1:
+                                        printf("\n%sBank Balance Selected%s\n", yellow, white);
+                                        printf("%s\n::%s BANK BALANCE::\n", purple, getFullName());
+                                        printf("%s :: %d\n%s", username , getBalance(), white);
+                                        break;
+                                case 2:
+                                        printf("%sTransfer Option Selected%s\n", yellow, white);
+
+                                        printf("%s:Enter the USERNAME of the individual to transfer to:\n%s",purple,white);
+                                        char otherUser[30];
+                                        scanf("%s",otherUser);
+                                        if(checkUserInput(otherUser) == 1){
+                                                printf("Illegal chars used\n");
+                                                break;
+                                        }
+
+                                        printf("%s:Enter the AMOUNT you wish to transfer:\n%s",purple,white);
+                                        int amount;
+                                        scanf("%d", &amount);
+
+                                        int success = checkLegalTransfer(otherUser, amount);
+                                        if(success == 0)
+                                        {
+                                                printf("%s\n\n Your transfer of the amount %d to user %s has been successful!\n\n%s", purple, amount, otherUser, white);
+                                        }
+
+                                        break;
+                                case 3:
+                                        printf("%sBet Funds Option Selected%s\n", yellow, white);
+                                        printf("\n\nBET area not available at this time\n\n");
+                                        break;
+                                case 4:
+                                        printf("\033[1;36m\n*============*\nGoodbye From Cahill's Bank!\n*============*\n\033[0m");
+                                        exit(0);
+                                        break;
+                        }
+
+                }
+                 else
+                {
+                        printf("ERROR::CHOICE INCORRECT\n");
+                }
+                 BankingOptions();
+
+}
+
 //Login function asks for username and password and checks SQLite database
 void LogIn()
 {
         printf("%sm\n*============*\nLog into Cahill's Bank!\n*============*%s\n\n", yellow , white);
         printf("What is your username?\n");
-        char username[30];
+
         scanf("%s", username);
         printf("What is your password?\n");
         char password[20];
@@ -52,51 +127,8 @@ void LogIn()
         }
         else
         {
-                printf("%s*============*\nWELCOME to your Cahill's ACCOUNT\n*============*\n%s\n", yellow, white);
-                printf("What ACTION would you like to perform?\n");
-                printf("1 --- See Balance \n");
-                printf("2 --- Transfer Funds\n");
-                printf("3 --- Bet Funds\n");
-                printf("4 --- Exit\n");
-
-                int choice;
-                scanf("%d", &choice);
-
-                if(choice > 0 && choice < 5)
-                {
-                        switch (choice)
-                        {
-                                case 1:
-                                        printf("\n%sBank Balance Selected%s\n", yellow, white);
-                                        printf("\n::%s BANK BALANCE::\n", getFullName());
-                                        printf("%s :: %d\n", username , getBalance());
-                                        break;
-                                case 2:
-                                        printf("%sTransfer Option Selected%s\n", yellow, white);
-                                        break;
-                                case 3:
-                                        printf("%sBet Funds Option Selected%s\n", yellow, white);
-                                        break;
-                                case 4:
-                                        printf("\033[1;36m\n*============*\nGoodbye From Cahill's Bank!\n*============*\n\033[0m");
-                                        break;
-                        }
-
-                }
-                 else
-                {
-                        printf("ERROR::CHOICE INCORRECT\n");
-                }
-
+                BankingOptions();
         }
-}
-
-//Checks string to see if chars are legal
-int checkUserInput(char* input){
-        for(int i = 0; i < strlen(input); i++){
-                if(isalpha(input[i]) == 0 ) { return 1; }
-        }
-        return 0;
 }
 
 //Prompts user to enter details to create account
@@ -172,8 +204,10 @@ int main(void)
                         break;
                 case 3:
                         printf("\033[1;36m\n*============*\nGoodbye From Cahill's Bank!\n*============*\n\033[0m");
+                        return 0;
                         break;
 
         }
         return 0;
 }
+                                        
