@@ -1,0 +1,5 @@
+#!/bin/bash
+
+gcc -o Both BankInterface.c Database.c -l sqlite3
+./Both
+
