@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 char* red = "\033[1;31m";
 char* white = "\033[0m";
@@ -8,7 +10,10 @@ char* purple = "\033[1;35m";
 int checkInput(char*, char*);
 int getBalance();
 char* getFullName();
+int CreateUser(char*, char*, char*, char*, int);
+int checkTableExists();
 
+// Function that returns user choice from various services
 int WelcomeMenu()
 {
         printf("%s\n*============*\nWelcome to Cahill's Bank!\n*============*%s\n\n", red, white);
@@ -28,6 +33,8 @@ int WelcomeMenu()
                 return -1;
         }
 }
+
+//Login function asks for username and password and checks SQLite database
 void LogIn()
 {
         printf("%sm\n*============*\nLog into Cahill's Bank!\n*============*%s\n\n", yellow , white);
@@ -39,7 +46,7 @@ void LogIn()
         scanf("%s", password);
 
         int inputCheck = checkInput(username, password);
-        if(inputCheck == 0)
+        if(inputCheck == 1)
         {
                 printf("\n%s*============*\nACCESS DENIED\n*============*\n%s\n", red,  white);
         }
@@ -56,23 +63,23 @@ void LogIn()
                 scanf("%d", &choice);
 
                 if(choice > 0 && choice < 5)
-                  switch (choice)
+                {
+                        switch (choice)
                         {
                                 case 1:
                                         printf("\n%sBank Balance Selected%s\n", yellow, white);
                                         printf("\n::%s BANK BALANCE::\n", getFullName());
                                         printf("%s :: %d\n", username , getBalance());
-
                                         break;
                                 case 2:
                                         printf("%sTransfer Option Selected%s\n", yellow, white);
                                         break;
                                 case 3:
                                         printf("%sBet Funds Option Selected%s\n", yellow, white);
+                                        break;
                                 case 4:
                                         printf("\033[1;36m\n*============*\nGoodbye From Cahill's Bank!\n*============*\n\033[0m");
                                         break;
-
                         }
 
                 }
@@ -84,9 +91,19 @@ void LogIn()
         }
 }
 
+//Checks string to see if chars are legal
+int checkUserInput(char* input){
+        for(int i = 0; i < strlen(input); i++){
+                if(isalpha(input[i]) == 0 ) { return 1; }
+        }
+        return 0;
+}
+
+//Prompts user to enter details to create account
 int CreateAccount()
 {
         printf("%s\n*============*\nCreate a Cahill's Bank Account!\n*============*\n%s\n", yellow, white);
+        printf("\n%s ONLY ALPHABETIC CHARACTERS ALLOWED IN FIELDS \n%s", red , white);
         int ID;
         char username[30];
         char password[20];
@@ -95,21 +112,55 @@ int CreateAccount()
         int Balance;
 
 
-
+        //gets input and checks if it has all legal chars
         printf("Choose a username between 0 -- 30 characters\n");
         scanf("%s", username);
+        if(checkUserInput(username) == 1){
+                printf("%s\nIllegal character used!\n%s", red , white);
+                return 1;
+        }
         printf("Choose a password between 0 -- 20 characters\n");
         scanf("%s", password);
+        if(checkUserInput(password) == 1){
+                printf("%s\nIllegal character used!\n%s", red , white);
+                return 1;
+        }
         printf("Enter Your Full Name (0 -- 30)\n");
         scanf("%s", fullname);
+        if(checkUserInput(fullname) == 1){
+                printf("%s\nIllegal character used!\n%s", red , white);
+                return 1;
+        }
         printf("Enter Your Address (0 -- 50)\n");
-        scanf("%d", address);
+        scanf("%s", address);
+        if(checkUserInput(address) == 1){
+                printf("%s\nIllegal character used!\n%s", red , white);
+                return 1;
+        }
         printf("Generating Balance. . . .\n");
+        Balance = 1000;
 
+
+        //Runs CreateUser function from Database.c to create an entry in the SQL table
+        int success = CreateUser(username, password, fullname, address, Balance);
+
+        if(success != 0)
+        {
+                printf("ERROR in user creation\n");
+                return 1;
+        }
+        else
+        {
+                printf("%s\n*============*\n:YOUR ACCOUNT HAS BEEN CREATED:\n*============*\n", yellow );
+                printf(":Username: %s\n:Fullname: %s\n:Address: %s\n:Balance %d:\n*============*\n%s\n", username, fullname, address, Balance, white);
+                return 0;
+        }
 }
 
 int main(void)
 {
+        //function to check if table exist and function that returns an int that represents menu selection
+        checkTableExists();
         int choice = WelcomeMenu();
 
         switch (choice) {
@@ -126,4 +177,3 @@ int main(void)
         }
         return 0;
 }
-              
